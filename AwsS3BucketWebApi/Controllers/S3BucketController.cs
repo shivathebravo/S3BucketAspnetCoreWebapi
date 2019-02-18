@@ -15,12 +15,19 @@ namespace AwsS3BucketWebApi.Controllers
             _service = service;
         }
 
-        [HttpPost ("{bucketName}")]
-
+        [HttpPost]
+        [Route("CreateBucket/{bucketName}")]
         public async Task<IActionResult> CreateBucket([FromRoute] string bucketName)
         {
             var response = await _service.CreateBucketAsync(bucketName);
             return Ok(response);
+        }
+        [HttpPost]
+        [Route("AddFile/{bucketName}")]
+        public async Task<IActionResult> AddFile([FromRoute] string bucketName)
+        {
+            await _service.UploadFileAsync(bucketName);
+            return ok();
         }
 
     }

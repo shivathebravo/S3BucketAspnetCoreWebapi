@@ -5,7 +5,7 @@ using AwsS3BucketWebApi.Models;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-
+using Amazon.S3.Transfer;
 namespace AwsS3BucketWebApi.Services
 {
     public class S3Service : IS3Service
@@ -58,6 +58,52 @@ namespace AwsS3BucketWebApi.Services
                 Status = HttpStatusCode.InternalServerError,
                 Message = "Something went wrong"
             };
+        }
+
+
+        private const string filePath="C:\\Temp\\Test.txt";
+        private const string uploadWithKeyName="UploadWithKeyName";
+        private const string FilesStreamUpload="FileStreamUpload";
+        private const string AdvancedUpload="AdvancedUpload";
+
+        public async Task UploadFileAsync(string bucketName)
+        {
+            try
+            {
+                var fileTransferUtility = new TransferUtility(_client);
+                //option1
+                await fileTransferUtility.UploadAsync(FilePath, bucketName);
+                //option2
+                await fileTransferUtility.UploadAsync(FilePath, bucketName, uploadWithKeyName);
+                //option3
+                using (var fileToUpload = new FileStream(FilePath, FileMode.Open, FileAccess.Read))
+                {
+                    await fileTransferUtility.UploadAsync((fileToUpload, bucketName, FileStreamUpload));
+                }
+                //option4
+                var fileTransferUtilityRequest = new TransferUtilityUploadRequest
+                {
+                    BucketName = bucketName,
+                    FilePath = FilePath,
+                    StorageClass=S3StorageClass.Standard,
+                    PartSize=6291456,
+                    Key=AdvancedUpload,
+                    CannedACL=S3CannedACL.NoACL
+                };
+
+                fileTransferUtilityRequest.Metadata.Add("param1", "Value1");
+                fileTransferUtilityRequest.Metadata.Add("param2", "Value2");
+
+                await fileTransferUtility.UploadAsync(fileTransferUtilityRequest);
+            }
+            catch (AmazonS3Exception e)
+            {
+                System.Console.WriteLine("Error encountered on server. Message'{0}' when writing an object", e.Messag);
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine("Error encountered on server. Message'{0}' when writtign to an object", e.Messag);
+            }
         }
 
     }
