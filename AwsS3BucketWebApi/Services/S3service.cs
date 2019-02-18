@@ -1,11 +1,12 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Transfer;
 using Amazon.S3.Util;
 using AwsS3BucketWebApi.Models;
 using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Amazon.S3.Transfer;
 namespace AwsS3BucketWebApi.Services
 {
     public class S3Service : IS3Service
@@ -61,10 +62,10 @@ namespace AwsS3BucketWebApi.Services
         }
 
 
-        private const string filePath="C:\\Temp\\Test.txt";
-        private const string uploadWithKeyName="UploadWithKeyName";
-        private const string FilesStreamUpload="FileStreamUpload";
-        private const string AdvancedUpload="AdvancedUpload";
+        private const string filePath = "C:\\Users\\Shiva\\Desktop\\Temp\\logo.jpg";
+        private const string uploadWithKeyName = "UploadWithKeyName";
+        private const string filesStreamUpload = "FileStreamUpload";
+        private const string advancedUpload = "AdvancedUpload";
 
         public async Task UploadFileAsync(string bucketName)
         {
@@ -72,23 +73,23 @@ namespace AwsS3BucketWebApi.Services
             {
                 var fileTransferUtility = new TransferUtility(_client);
                 //option1
-                await fileTransferUtility.UploadAsync(FilePath, bucketName);
+                await fileTransferUtility.UploadAsync(filePath, bucketName);
                 //option2
-                await fileTransferUtility.UploadAsync(FilePath, bucketName, uploadWithKeyName);
+                await fileTransferUtility.UploadAsync(filePath, bucketName, uploadWithKeyName);
                 //option3
-                using (var fileToUpload = new FileStream(FilePath, FileMode.Open, FileAccess.Read))
+                using (var fileToUpload = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
-                    await fileTransferUtility.UploadAsync((fileToUpload, bucketName, FileStreamUpload));
+                    await fileTransferUtility.UploadAsync(fileToUpload, bucketName, filesStreamUpload);
                 }
                 //option4
                 var fileTransferUtilityRequest = new TransferUtilityUploadRequest
                 {
                     BucketName = bucketName,
-                    FilePath = FilePath,
-                    StorageClass=S3StorageClass.Standard,
-                    PartSize=6291456,
-                    Key=AdvancedUpload,
-                    CannedACL=S3CannedACL.NoACL
+                    FilePath = filePath,
+                    StorageClass = S3StorageClass.Standard,
+                    PartSize = 6291456,
+                    Key = advancedUpload,
+                    CannedACL = S3CannedACL.NoACL
                 };
 
                 fileTransferUtilityRequest.Metadata.Add("param1", "Value1");
@@ -98,11 +99,11 @@ namespace AwsS3BucketWebApi.Services
             }
             catch (AmazonS3Exception e)
             {
-                System.Console.WriteLine("Error encountered on server. Message'{0}' when writing an object", e.Messag);
+                System.Console.WriteLine("Error encountered on server. Message'{0}' when writing an object", e.Message);
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("Error encountered on server. Message'{0}' when writtign to an object", e.Messag);
+                System.Console.WriteLine("Error encountered on server. Message'{0}' when writtign to an object", e.Message);
             }
         }
 

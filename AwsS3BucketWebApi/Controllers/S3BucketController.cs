@@ -27,7 +27,7 @@ namespace AwsS3BucketWebApi.Controllers
         public async Task<IActionResult> AddFile([FromRoute] string bucketName)
         {
             await _service.UploadFileAsync(bucketName);
-            return ok();
+            return Ok();
         }
 
     }
